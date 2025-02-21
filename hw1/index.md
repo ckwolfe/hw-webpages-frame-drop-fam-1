@@ -3,6 +3,9 @@
 
 **Name:** C.K. Wolfe, Edward Lee
 
+Link to Webpage: [https://cal-cs184-student.github.io/hw-webpages-frame-drop-fam-1/hw1/index.html](https://cal-cs184-student.github.io/hw-webpages-frame-drop-fam-1/hw1/index.html)
+Link to GitHub Repository: [https://github.com/redspry/sp25-hw1-X](https://github.com/redspry/sp25-hw1-X) (due to GitHub classroom group issues and being unable to switch groups, we had to create an external fork of the GitHub classroom repository)
+
 ## Task 1: Drawing Single-Color Triangles
 
 For each triangle, we calculate the bounding box by taking the minimum and maximum x and y coordinates of the triangle’s vertices. This ensures only the relevant portion of the screen is tested. For each pixel within that bounding box, we sample at (x + 0.5, y + 0.5) to determine if the center of the pixel lies within the triangle. We use a barycentric coordinate (or half-space) test to check if the sample is inside. If it is, we fill the pixel with the triangle’s color using `fill_pixel()`. Because we only iterate over the bounding box of each triangle, this method is no more expensive than sampling every pixel in the bounding box. In other words, we do not check pixels outside the bounding box, which keeps the algorithm efficient.
