@@ -4,6 +4,7 @@
 **Name:** C.K. Wolfe, Edward Lee
 
 Link to Webpage: [https://cal-cs184-student.github.io/hw-webpages-frame-drop-fam-1/hw1/index.html](https://cal-cs184-student.github.io/hw-webpages-frame-drop-fam-1/hw1/index.html)
+
 Link to GitHub Repository: [https://github.com/redspry/sp25-hw1-X](https://github.com/redspry/sp25-hw1-X) (due to GitHub classroom group issues and being unable to switch groups, we had to create an external fork of the GitHub classroom repository)
 
 ## Task 1: Drawing Single-Color Triangles
