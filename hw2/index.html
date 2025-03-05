@@ -150,10 +150,52 @@
 		</div>
 
 		<h3>Part 4: Edge flip</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			To flip an edge, we change the \( (b, c) \) edge to the \( (a, d) \) edge by replacing the correct iterators. We have to change every half-edge to point to the new next half-edge and ensure the face half-edge iterators point to a half-edge actually corresponding to the new faces. We don't have to change the \( a \) and \( d \) vertex half-edge iterators since we are only adding a half-edge to those vertices, but we do have to change the \( b \) and \( c \) half-edge iterators since they may point to the half-edges on the \( (b, c) \) edge. The half-edges on the \( (b, c) \) edge also have to have their vertices and faces changed to reflect the new mesh. None of the edge half-edge iterators have to be changed. If the edge is a boundary edge, we immediately returned the original edge without changing anything. To keep everything neat, we organized the lines of code in groups to extract the half-edges and the faces, then changed all of the iterators mentioned above. For iterators that did not change in the half-edges, we passed in references to its own values to make it clear in the code what is being updated and what is not. This resulted in everything (luckily) working the first time!
+		</p>
+		<p>
+			The teapot in its original form and with a bunch of edges flipped is shown below. The edges that were flipped that would not change the geometry continue to have the same shading, while the edges that were flipped that would change the geometry have different shading corresponding to the new geometry.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: separate; border-spacing: 20px;">
+					<tr>
+							<td style="text-align: center; padding: 10px;">
+									<img src="part4/4a.png" width="400px"/>
+									<figcaption>Original Teapot</figcaption>
+							</td>
+							<td style="text-align: center; padding: 10px;">
+									<img src="part4/4b.png" width="400px"/>
+									<figcaption>Teapot with Edges Flipped</figcaption>
+							</td>
+					</tr>
+			</table>
+		</div>
 
 		<h3>Part 5: Edge split</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			To split an edge, we take the midpoint of a given edge \( (b, c) \) and split the two faces adjacent to this edge using the midpoint \( m \) as a new vertex, connecting it to vertices \( a \) and \( d \). Our implementation changes the two faces to correspond to the \( (a, m, c) \) and \( (c, m, d) \) faces and changes the \( (b, c) \) edge to the \( (m, c) \) edge. We create the other new edges and half-edges containing the new vertex \( m \) and the two new \( (a, m, b) \) and \( (b, m, d) \) faces. The only old vertex that needs to be changed is \( b \), as it is the only vertex that is losing a half-edge. With our implementation, none of the old edges have to change, but the old faces have to change to make sure they don't point to the wrong half-edges. Then we need to change all of the half-edges to their updated next half-edges, new twin half-edges, new vertices, new edges, and new faces. The only half-edge that actually doesn't have to change is the half-edge pointing from vertex \( d \) to vertex \( c \). Like part 4, we systematically got the references to all of the half-edges, vertices, and faces and changed all of the iterators described. We also systematically created the new iterators in the mesh. When updating the half-edges, we organized it by face. As we did in part 4, for iterators that did not change in the half-edges, we passed in references to its own values to make it clear in the code what is being updated and what is not. This again resulted in everything (luckily) working the first time!
+		</p>
+		<p>
+			The teapot in its original form, with some edge splits, and with both edge splits and edge flips is shown below. The edge splits without edge flips do not significantly change the geometry of the teapot, so it is hard to notice shading changes with only the edge splits. With both edge splits and edge flips, we can see more unique shading patterns by flipping new mesh patterns created by splitting edges.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: separate; border-spacing: 20px;">
+					<tr>
+							<td style="text-align: center; padding: 10px;">
+									<img src="part5/5a.png" width="400px"/>
+									<figcaption>Original Teapot</figcaption>
+							</td>
+							<td style="text-align: center; padding: 10px;">
+									<img src="part5/5b.png" width="400px"/>
+									<figcaption>Teapot with Edges Split</figcaption>
+							</td>
+							<td style="text-align: center; padding: 10px;">
+								<img src="part5/5c.png" width="400px"/>
+								<figcaption>Teapot with Edges Split and Flipped</figcaption>
+						</td>
+					</tr>
+			</table>
+		</div>
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
