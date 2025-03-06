@@ -28,7 +28,7 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Spring 2025 Homework 2 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Edward Lee, C.K. Wolfe</div>
 
 		<br>
 
@@ -43,7 +43,9 @@
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		<p>
+			In this homework, we worked with meshes, starting with 1D Bezier curves then advancing to mesh operations. We implemented Bezier curves for creating smooth curves out of control points, Bezier surfaces for creating smooth surfaces out of control points, vertex normals for Phong shading, edge flipping and splitting for mesh manipulation, and loop subdivision for mesh upsampling. It was interesting to see intuitive mathematical concepts applied to graphics. For the Bezier curves and surfaces, we used the separability property to apply the 1D de Casteljau's algorithm to 2D. For smoother shading, we took an average of adjacent face normals for vertex normals. For edge flipping and splitting, we manually moved pointers around to efficiently update the mesh. For mesh upsampling, we took weighted averages of adjacent vertices to update vertex positions and used the edge flipping and splitting operations in a tricky way to increase our face number four-fold. All of these techniques were very neat to implement in code and intuitive to understand.
+		</p>
 
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
@@ -55,9 +57,9 @@
 
 			To find the Bezier curve using the intermediary control points, we recursively calculate \( \mathbf{b}_i^k(t) = (1 - t)\mathbf{b}_i^{k-1} + t \mathbf{b}_{i+1}^{k-1} \) to find \( \mathbf{b}^n(t) = \mathbf{b}_0^n(t) \), the Bezier curve. This algorithm can also be represented using the Bernstein polynomial:
 
-			\[ \mathbf{b}^n(t) = \mathbf{b}_0^n(t) = \sum\limits_{j=0}^n \mathbf{b}_j B_j^n(t) \]
+			\[ \mathbf{b}^n(t) = \mathbf{b}_0^n(t) = \sum\limits_{i=0}^n \mathbf{b}_i B_i^n(t) \]
 
-			The Bernstien polynomial \( B_j^n(t) \) is defined to be:
+			The Bernstein polynomial \( B_i^n(t) \) is defined to be:
 
 			\[ B_i^n(t) = \binom{n}{i} t^i (1 - t)^{n-i} \]
 
@@ -71,7 +73,7 @@
 			<figcaption>Six Control Points with the Bezier Curve</figcaption>
 		</div>
 		<p>
-			Each intermediary level is shown below with the Bezier Curve in green:
+			Each intermediary level is shown below with the Bezier curve in green:
 		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: separate; border-spacing: 20px;">
@@ -115,7 +117,7 @@
 
 		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
 		<p>
-			To extend the de Casteljau algorithm to Bezier suraces with a \( n \times n \) grid of control points, we can use the 1D de Casteljau algorithm in both directions independently to sample any point within the grid. Instead of having a single parameter \( t \), we have two parameters \( u \) and \( v \), one in the row direction and the other in the column direction respectively. To sample the surface at the point \( (u, v) \) (where both parameters lie in the range \( [0, 1] \)), we first apply the 1D de Casteljau algorithm on each row with parameter \( u \) to get the final point on each row, then apply the 1D de Casteljau algorithm to all of these points with parameter \( v \). Note that we calculate the row direction first, then the column direction, because the 2D de Casteljau algorithm is seperable.
+			To extend the de Casteljau algorithm to Bezier suraces with a \( n \times n \) grid of control points, we can use the 1D de Casteljau algorithm in both directions independently to sample any point within the grid. Instead of having a single parameter \( t \), we have two parameters \( u \) and \( v \), one in the row direction and the other in the column direction respectively. To sample the surface at the point \( (u, v) \) (where both parameters lie in the range \( [0, 1] \)), we first apply the 1D de Casteljau algorithm on each row with parameter \( u \) to get the final point on each row, then apply the 1D de Casteljau algorithm to all of these points with parameter \( v \). Note that we calculate the row direction first, then the column direction, because the 2D de Casteljau algorithm is separable.
 		</p>
 		<p>
 			Our evaluated teapot using our implementation is shown below.
@@ -151,8 +153,12 @@
 
 		<h3>Part 4: Edge flip</h3>
 		<p>
-			To flip an edge, we change the \( (b, c) \) edge to the \( (a, d) \) edge by replacing the correct iterators. We have to change every half-edge to point to the new next half-edge and ensure the face half-edge iterators point to a half-edge actually corresponding to the new faces. We don't have to change the \( a \) and \( d \) vertex half-edge iterators since we are only adding a half-edge to those vertices, but we do have to change the \( b \) and \( c \) half-edge iterators since they may point to the half-edges on the \( (b, c) \) edge. The half-edges on the \( (b, c) \) edge also have to have their vertices and faces changed to reflect the new mesh. None of the edge half-edge iterators have to be changed. If the edge is a boundary edge, we immediately returned the original edge without changing anything. To keep everything neat, we organized the lines of code in groups to extract the half-edges and the faces, then changed all of the iterators mentioned above. For iterators that did not change in the half-edges, we passed in references to its own values to make it clear in the code what is being updated and what is not. This resulted in everything (luckily) working the first time!
+			To flip an edge, we change the \( (b, c) \) edge to the \( (a, d) \) edge below by replacing the correct iterators. We have to change every half-edge to point to the new next half-edge and ensure the face half-edge iterators point to a half-edge actually corresponding to the new faces. We don't have to change the \( a \) and \( d \) vertex half-edge iterators since we are only adding a half-edge to those vertices, but we do have to change the \( b \) and \( c \) half-edge iterators since they may point to the half-edges on the \( (b, c) \) edge. The half-edges on the \( (b, c) \) edge also have to have their vertices and faces changed to reflect the new mesh. None of the edge half-edge iterators have to be changed. If the edge is a boundary edge, we immediately returned the original edge without changing anything. To keep everything neat, we organized the lines of code in groups to extract the half-edges and the faces, then changed all of the iterators mentioned above. For iterators that did not change in the half-edges, we passed in references to its own values to make it clear in the code what is being updated and what is not. This resulted in everything (luckily) working the first time!
 		</p>
+		<div style="display: flex; flex-direction: column; align-items: center; margin: 10px;">
+			<img src="part6/edgeflip.jpg" width="600px"/>
+			<figcaption>Edge Flip</figcaption>
+		</div>
 		<p>
 			The teapot in its original form and with a bunch of edges flipped is shown below. The edges that were flipped that would not change the geometry continue to have the same shading, while the edges that were flipped that would change the geometry have different shading corresponding to the new geometry.
 		</p>
@@ -173,8 +179,12 @@
 
 		<h3>Part 5: Edge split</h3>
 		<p>
-			To split an edge, we take the midpoint of a given edge \( (b, c) \) and split the two faces adjacent to this edge using the midpoint \( m \) as a new vertex, connecting it to vertices \( a \) and \( d \). Our implementation changes the two faces to correspond to the \( (a, m, c) \) and \( (c, m, d) \) faces and changes the \( (b, c) \) edge to the \( (m, c) \) edge. We create the other new edges and half-edges containing the new vertex \( m \) and the two new \( (a, m, b) \) and \( (b, m, d) \) faces. The only old vertex that needs to be changed is \( b \), as it is the only vertex that is losing a half-edge. With our implementation, none of the old edges have to change, but the old faces have to change to make sure they don't point to the wrong half-edges. Then we need to change all of the half-edges to their updated next half-edges, new twin half-edges, new vertices, new edges, and new faces. The only half-edge that actually doesn't have to change is the half-edge pointing from vertex \( d \) to vertex \( c \). Like part 4, we systematically got the references to all of the half-edges, vertices, and faces and changed all of the iterators described. We also systematically created the new iterators in the mesh. When updating the half-edges, we organized it by face. As we did in part 4, for iterators that did not change in the half-edges, we passed in references to its own values to make it clear in the code what is being updated and what is not. This again resulted in everything (luckily) working the first time!
+			To split an edge, we take the midpoint of a given edge \( (b, c) \) and split the two faces adjacent to this edge using the midpoint \( m \) as a new vertex, connecting it to vertices \( a \) and \( d \) as shown below. Our implementation changes the two faces to correspond to the \( (a, m, c) \) and \( (c, m, d) \) faces and changes the \( (b, c) \) edge to the \( (m, c) \) edge. We create the other new edges and half-edges containing the new vertex \( m \) and the two new \( (a, m, b) \) and \( (b, m, d) \) faces. The only old vertex that needs to be changed is \( b \), as it is the only vertex that is losing a half-edge. With our implementation, none of the old edges have to change, but the old faces have to change to make sure they don't point to the wrong half-edges. Then we need to change all of the half-edges to their updated next half-edges, new twin half-edges, new vertices, new edges, and new faces. The only half-edge that actually doesn't have to change is the half-edge pointing from vertex \( d \) to vertex \( c \). Like part 4, we systematically got the references to all of the half-edges, vertices, and faces and changed all of the iterators described. We also systematically created the new iterators in the mesh. When updating the half-edges, we organized it by face. As we did in part 4, for iterators that did not change in the half-edges, we passed in references to its own values to make it clear in the code what is being updated and what is not. This again resulted in everything (luckily) working the first time!
 		</p>
+		<div style="display: flex; flex-direction: column; align-items: center; margin: 10px;">
+			<img src="part6/split.jpg" width="600px"/>
+			<figcaption>Edge Split</figcaption>
+		</div>
 		<p>
 			The teapot in its original form, with some edge splits, and with both edge splits and edge flips is shown below. The edge splits without edge flips do not significantly change the geometry of the teapot, so it is hard to notice shading changes with only the edge splits. With both edge splits and edge flips, we can see more unique shading patterns by flipping new mesh patterns created by splitting edges.
 		</p>
@@ -198,21 +208,241 @@
 		</div>
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
+		<p>
+			To implement mesh upsampling for loop subdivision, we followed the suggested technique in the spec:
+		</p>
+		<ol>
+			<li>
+				<p>
+					Compute updated vertex positions for the original vertices: We looped through all of the vertices computed the new positions according to the formula provided in the spec:
+					<div style="display: flex; flex-direction: column; align-items: center; margin: 10px;">
+						<code>
+							(1 - n * u) * original_position + u * original_neighbor_position_sum
+						</code>
+					</div>
+					Here, <code>original_position</code> is the (original) position of the vertex, <code>original_neighbor_position_sum</code> is the sum of the (original) positions of the adjacent vertices, <code>n</code> is the degree of the vertex, and <code>u</code> is the weight of the adjacent vertices defined by the formula:
+					\[
+						u = \begin{cases} \frac{3}{16} & n = 3 \\ \frac{3}{8n} & n \neq 3 \end{cases}
+					\]
+					This is encapsulated in the diagram below.
+					<div style="display: flex; flex-direction: column; align-items: center; margin: 10px;">
+						<img src="part6/oldvertex.png" width="400px"/>
+						<figcaption>Weights of Updated Position of Old Vertices</figcaption>
+					</div>
+					We also made sure to set <code>isNew</code> to <code>false</code> for all of the vertices, as some of the vertices may have <code>isNew = true</code> from the previous mesh upsampling.
+				</p>
 			</li>
-		</ul>
+			<li>
+				<p>
+					Compute updated vertex positions for the new vertices: We stored the new vertex positions in the edges they would be generated on since we haven't create the new vertices yet. We used the formula provided in the spec:
+					<div style="display: flex; flex-direction: column; align-items: center; margin: 10px;">
+						<code>
+							3/8 * (A + B) + 1/8 * (C + D)
+						</code>
+					</div>
+					Here, <code> A, B, C, D </code> are the positions of the vertices \( A, B, C, D \) in the diagram below. This pushes the new vertices a little bit towards the vertices on the old faces before we split the edges. Previously, it would only consider the vertices on the edge the new vertex is being generaed on.
+					<div style="display: flex; flex-direction: column; align-items: center; margin: 10px;">
+						<img src="part6/newvertex.png" width="300px"/>
+						<figcaption>Weights of Updated Position of New Vertices</figcaption>
+					</div>
+					We also made sure to set <code>isNew</code> to <code>false</code> for all of the edges, as some of the edges may have <code>isNew = true</code> from the previous mesh upsampling. This is one of the steps we had to debug, as the edge <code>isNew</code> flag would persist between mesh upsamplings on accident.
+				</p>
+			</li>
+			<li>
+				<p>
+					Split all old edges in the mesh: We looped through all the edges and ran the split function on all of the old edges in the mesh except for the boundary edges. We identified an old edge by checking if the vertices it corresponded to were old and the edge was old. From the edge split function, we got the new vertex, and we set the <code>newPosition</code> value to be the <code>newPosition</code> value of the edge we were splitting calculated from Step 2. We then reset the <code>newPosition</code> value of the edge for safety. We also had to modify our edge split function to set the <code>isNew</code> flag of the new vertex and edges. The new edges that made up the original edge were set as old (<code>isNew = false</code>), while the new vertex and new edges that didn't lie on the original edge we set as new (<code>isNew = true</code>). This is the other step we had to debug, as our original split function wasn't returning the right values and we needed to avoid the boundary edges.
+				</p>
+			</li>
+			<li>
+				<p>
+					Flip new edges connecting an old vertex to a new vertex: We looped through all of the edges and ran the flip function on all of the new edges connecting an old vertex to a new vertex. This step was the most straightforward.
+				</p>
+			</li>
+			<li>
+				<p>
+					Copy the new vertex positions into the vertex <code>position</code> value: We looped through all of the vertices and set its <code>position</code> value to its <code>newPosition</code> value. We also reset the <code>newPosition</code> value for safety.
+				</p>
+			</li>
+		</ol>
+		<p>
+			Below is our icosahedron upsampled. The sharp edges and vertices get smoothed out in this process, and it turns into a sphere.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron/0.png" width="400px"/>
+						<figcaption>Original</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron/1.png" width="400px"/>
+						<figcaption>One Subdivision</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron/2.png" width="400px"/>
+						<figcaption>Two Subdivisions</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron/3.png" width="400px"/>
+						<figcaption>Three Subdivisions</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron/4.png" width="400px"/>
+						<figcaption>Four Subdivisions</figcaption>
+				</div>
+			</div>
+		</div>
+		<p>
+			To reduce this smoothing, we can pre-split some of the sharp edges near the sharp vertices to retain the some of the sharp geometry near the vertex.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron_presplit/0.png" width="400px"/>
+						<figcaption>Original</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron_presplit/1.png" width="400px"/>
+						<figcaption>One Subdivision</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron_presplit/2.png" width="400px"/>
+						<figcaption>Two Subdivisions</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron_presplit/3.png" width="400px"/>
+						<figcaption>Three Subdivisions</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/icosahedron_presplit/4.png" width="400px"/>
+						<figcaption>Four Subdivisions</figcaption>
+				</div>
+			</div>
+		</div>
+		<p>
+			Here is our torus upsampled. The sharp edges and vertices also get smoothed out in this process, and it turns into a ring.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus/0.png" width="400px"/>
+						<figcaption>Original</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus/1.png" width="400px"/>
+						<figcaption>One Subdivision</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus/2.png" width="400px"/>
+						<figcaption>Two Subdivisions</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus/3.png" width="400px"/>
+						<figcaption>Three Subdivisions</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus/4.png" width="400px"/>
+						<figcaption>Four Subdivisions</figcaption>
+				</div>
+			</div>
+		</div>
+		<p>
+			To reduce this smoothing, we can again pre-split some of the sharp edges near the sharp vertices to retain the some of the sharp geometry near the vertex.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus_presplit/0.png" width="400px"/>
+						<figcaption>Original</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus_presplit/1.png" width="400px"/>
+						<figcaption>One Subdivision</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus_presplit/2.png" width="400px"/>
+						<figcaption>Two Subdivisions</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus_presplit/3.png" width="400px"/>
+						<figcaption>Three Subdivisions</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/torus_presplit/4.png" width="400px"/>
+						<figcaption>Four Subdivisions</figcaption>
+				</div>
+			</div>
+		</div>
+		<p>
+			Here is our cube upsampled. The sharp edges and vertices again get smoothed out in this process, and it approaches an asymmetric ball.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube/0.png" width="400px"/>
+						<figcaption>Original</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube/1.png" width="400px"/>
+						<figcaption>One Subdivision</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube/2.png" width="400px"/>
+						<figcaption>Two Subdivisions</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube/3.png" width="400px"/>
+						<figcaption>Three Subdivisions</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube/4.png" width="400px"/>
+						<figcaption>Four Subdivisions</figcaption>
+				</div>
+			</div>
+		</div>
+		<p>
+			The asymmetry occurs because of the asymmetric mesh of the cube -- each face of the cube is made up of two triangles, where two vertices are vertices of these two triangles and the other two are not. The two that are on these triangles get pulled in more when calculating the new positions of the vertices with the weighted averages, as the weight on the original vertex is less. To mitigate this effect, we can make the mesh of the cube symmetric around all vertices. To make this fully symmetric, we can pre-process and split all of the edges on each face of the cube so that four triangles make up each face. Then each vertex has the same number of adjacent vertices, so the new vertex positions of the old vertices are all calculated with the same weights. The cube now approaches a rounded cube after each subdivision.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube_presplit/0.png" width="400px"/>
+						<figcaption>Original</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube_presplit/1.png" width="400px"/>
+						<figcaption>One Subdivision</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube_presplit/2.png" width="400px"/>
+						<figcaption>Two Subdivisions</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube_presplit/3.png" width="400px"/>
+						<figcaption>Three Subdivisions</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+						<img src="part6/cube_presplit/4.png" width="400px"/>
+						<figcaption>Four Subdivisions</figcaption>
+				</div>
+			</div>
+		</div>
+
+		<h2>Additional Notes</h2>
+		<p>
+			ChatGPT was used for some basic HTML formatting, but otherwise all code was written and debugged was our own.
+		</p>
 		</div>
 	</body>
 </html>
