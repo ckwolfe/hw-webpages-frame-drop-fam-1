@@ -86,16 +86,16 @@
 									<img src="part1/1c.png" width="400px"/>
 									<figcaption>Level 2</figcaption>
 							</td>
+					</tr>
 							<td style="text-align: center; padding: 10px;">
 									<img src="part1/1d.png" width="400px"/>
 									<figcaption>Level 3</figcaption>
 							</td>
-					</tr>
-					<tr>
 							<td style="text-align: center; padding: 10px;">
 									<img src="part1/1e.png" width="400px"/>
 									<figcaption>Level 4</figcaption>
 							</td>
+					</tr>
 							<td style="text-align: center; padding: 10px;">
 									<img src="part1/1f.png" width="400px"/>
 									<figcaption>Level 5</figcaption>
@@ -189,22 +189,22 @@
 			The teapot in its original form, with some edge splits, and with both edge splits and edge flips is shown below. The edge splits without edge flips do not significantly change the geometry of the teapot, so it is hard to notice shading changes with only the edge splits. With both edge splits and edge flips, we can see more unique shading patterns by flipping new mesh patterns created by splitting edges.
 		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: 100%; text-align: center; border-collapse: separate; border-spacing: 20px;">
-					<tr>
-							<td style="text-align: center; padding: 10px;">
-									<img src="part5/5a.png" width="400px"/>
-									<figcaption>Original Teapot</figcaption>
-							</td>
-							<td style="text-align: center; padding: 10px;">
-									<img src="part5/5b.png" width="400px"/>
-									<figcaption>Teapot with Edges Split</figcaption>
-							</td>
-							<td style="text-align: center; padding: 10px;">
-								<img src="part5/5c.png" width="400px"/>
-								<figcaption>Teapot with Edges Split and Flipped</figcaption>
-						</td>
-					</tr>
-			</table>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+					<img src="part5/5a.png" width="400px"/>
+					<figcaption>Original Teapot</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+					<img src="part5/5b.png" width="400px"/>
+					<figcaption>Teapot with Edges Split</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+					<img src="part5/5c.png" width="400px"/>
+					<figcaption>Teapot with Edges Split and Flipped</figcaption>
+				</div>
+			</div>
 		</div>
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
@@ -273,6 +273,8 @@
 						<img src="part6/icosahedron/0.png" width="400px"/>
 						<figcaption>Original</figcaption>
 				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
 				<div style="text-align: center; padding: 10px;">
 						<img src="part6/icosahedron/1.png" width="400px"/>
 						<figcaption>One Subdivision</figcaption>
@@ -302,6 +304,8 @@
 						<img src="part6/icosahedron_presplit/0.png" width="400px"/>
 						<figcaption>Original</figcaption>
 				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
 				<div style="text-align: center; padding: 10px;">
 						<img src="part6/icosahedron_presplit/1.png" width="400px"/>
 						<figcaption>One Subdivision</figcaption>
@@ -331,6 +335,8 @@
 						<img src="part6/torus/0.png" width="400px"/>
 						<figcaption>Original</figcaption>
 				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
 				<div style="text-align: center; padding: 10px;">
 						<img src="part6/torus/1.png" width="400px"/>
 						<figcaption>One Subdivision</figcaption>
@@ -360,6 +366,8 @@
 						<img src="part6/torus_presplit/0.png" width="400px"/>
 						<figcaption>Original</figcaption>
 				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
 				<div style="text-align: center; padding: 10px;">
 						<img src="part6/torus_presplit/1.png" width="400px"/>
 						<figcaption>One Subdivision</figcaption>
@@ -389,6 +397,8 @@
 						<img src="part6/cube/0.png" width="400px"/>
 						<figcaption>Original</figcaption>
 				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
 				<div style="text-align: center; padding: 10px;">
 						<img src="part6/cube/1.png" width="400px"/>
 						<figcaption>One Subdivision</figcaption>
@@ -418,6 +428,8 @@
 						<img src="part6/cube_presplit/0.png" width="400px"/>
 						<figcaption>Original</figcaption>
 				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
 				<div style="text-align: center; padding: 10px;">
 						<img src="part6/cube_presplit/1.png" width="400px"/>
 						<figcaption>One Subdivision</figcaption>
@@ -438,10 +450,28 @@
 				</div>
 			</div>
 		</div>
+		<p>
+			Here is the beetle upsampled once. On boundaries, the loop subdivision fails because there is no opposite face with a vertex to average with and the algorithm takes the wrong vertex.
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: separate; border-spacing: 20px;">
+					<tr>
+							<td style="text-align: center; padding: 10px;">
+									<img src="part6/beetle/0.png" width="400px"/>
+									<figcaption>Original</figcaption>
+							</td>
+							<td style="text-align: center; padding: 10px;">
+									<img src="part6/beetle/1.png" width="400px"/>
+									<figcaption>One Subdivision</figcaption>
+							</td>
+					</tr>
+			</table>
+		</div>
 
 		<h2>Additional Notes</h2>
 		<p>
-			ChatGPT was used for some basic HTML formatting, but otherwise all code was written and debugged was our own.
+			ChatGPT was used for some basic HTML formatting, but otherwise all code was written and debugged on our own.
 		</p>
 		</div>
 	</body>
