@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML'></script>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 		<style>
 			h1 {
@@ -48,29 +48,111 @@
 		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+		<p>
+			In Tasks 1 and 2, to generate the rays for ray tracing, we perform Monte Carlo sampling for every pizel by tracing random rays through every pixel (not through the same spot in the pixel) and averaging the illuminance for all of these rays to get the color of the corresponding pixel. These rays start from the camera origin and cast through the corresponding point in the camera space at \( z = -1 \).
+		</p>
+		<p>
+			In Tasks 3 and 4, we implement methods to detect nearest ray intersection with the triangle and sphere primitives. We find if the ray intersects with the primitive using various algorithms, then if it does, we update the intersection instance with the time of intersection, surface normal at the intersection, the corresponding primitive, and the surface material.
+		</p>
+		<p>
+			To detect and calculate triangle intersection, we implemented the Möller Trumbore Algorithm. This algorithm calculates the barycentric coordinates of the intersection point. By expressing the intersection as a point on the ray (\( \vec{o} + t \vec{d} \)) and as barycentric coordinates using the triangle (\( w \vec{p_1} + u \vec{p_2} + v \vec{p_3} \) where \( w + u + v = 1 \implies w = 1 - u - v \)), we can create the equation
+			\[
+				\begin{align}
+					\vec{o} + t \vec{d} &= w \vec{p_1} + u \vec{p_2} + v \vec{p_3} \\
+					&= (1 - u - v) \vec{p_1} + u \vec{p_2} + v \vec{p_3} \\
+					&= \vec{p_1} + u (\vec{p_2} - \vec{p_1}) + v (\vec{p_3} - \vec{p_1}) \\
+					-t \vec{d} + u (\vec{p_2} - \vec{p_1}) + v (\vec{p_3} - \vec{p_1}) &= \vec{o} - \vec{p_1} \\
+					\begin{bmatrix}
+						-\vec{d} & \vec{p_2} - \vec{p_1} & \vec{p_3} - \vec{p_1}
+					\end{bmatrix}
+					\begin{bmatrix}
+						t \\ u \\ v
+					\end{bmatrix}
+					&= \vec{o} - \vec{p_1}
+				\end{align}
+			\]
+			Note that \( \vec{p_2} - \vec{p_1} \) and \( \vec{p_3} - \vec{p_1} \) are two of the edges of the triangle, so we denote these as \( \vec{e_1} \) and \( \vec{e_2} \), respectively. For notational ease, we define \( \vec{s} = \vec{o} - \vec{p_1} \).
+			\[
+				\begin{bmatrix}
+					-\vec{d} & \vec{e_1} & \vec{e_2}
+				\end{bmatrix}
+				\begin{bmatrix}
+					t \\ u \\ v
+				\end{bmatrix}
+				= \vec{s}
+			\]
+			To solve this system, we can apply Cramer's rule. \( A, A_1, A_2, A_3 \) are defined to be
+			\[
+				\begin{align}
+					A &= \begin{bmatrix}
+						-\vec{d} & \vec{e_1} & \vec{e_2}
+					\end{bmatrix} \\
+					A_1 &= \begin{bmatrix}
+						\vec{s} & \vec{e_1} & \vec{e_2}
+					\end{bmatrix} \\
+					A_2 &= \begin{bmatrix}
+						-\vec{d} & \vec{s} & \vec{e_2}
+					\end{bmatrix} \\
+					A_3 &= \begin{bmatrix}
+						-\vec{d} & \vec{e_1} & \vec{s}
+					\end{bmatrix}
+				\end{align}
+			\]
+			By Cramer's rule, the solutions for \( t, u, v \) are
+			\[
+				\begin{bmatrix}
+					t \\ u \\ v
+				\end{bmatrix}
+				=
+				\frac{1}{\det(A)}
+				\begin{bmatrix}
+					\det(A_1) \\ \det(A_2) \\ \det(A_3)
+				\end{bmatrix}
+			\]
+			The determinant of a \( 3 \times 3 \) matrix \( \begin{bmatrix} A & B & C \end{bmatrix} \) is \( (A \times B) \cdot C = -(A \times C) \cdot B  = -(C \times B) \cdot A \), so
+			\[
+				\begin{align}
+					\det(A) &= -(-\vec{d} \times \vec{e_2}) \cdot \vec{e_1} = (\vec{d} \times \vec{e_2}) \cdot \vec{e_1} \\
+					\det(A_1) &= (\vec{s} \times \vec{e_1}) \cdot \vec{e_2} \\
+					\det(A_2) &= -(-\vec{d} \times \vec{e_2}) \cdot \vec{s} = (\vec{d} \times \vec{e_2}) \cdot \vec{s} \\
+					\det(A_3) &= -(\vec{s} \times \vec{e_1}) \cdot (-\vec{d}) = (\vec{s} \times \vec{e_1}) \cdot \vec{d}
+				\end{align}
+			\]
+			We can see that there are two unique cross products being calculated here, so to minimize the number of calculations needed, we can define \( \vec{s_1} = \vec{d} \times \vec{e_2} \) and \( \vec{s_2} = \vec{s} \times \vec{e_1} \). So the final calculation is
+			\[
+				\begin{bmatrix}
+					t \\ u \\ v
+				\end{bmatrix}
+				=
+				\frac{1}{\vec{s_1} \cdot \vec{e_1}}
+				\begin{bmatrix}
+					\vec{s_2} \cdot \vec{e_2} \\ \vec{s_1} \cdot \vec{s} \\ \vec{s_2} \cdot \vec{d}
+				\end{bmatrix}
+			\]
+		</p>
+		<p>
+			Here is the rendering of the empty scene, the scene with the spheres, the scene with the gems, and the banana.
+		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="part1/CBempty.png" width="400px"/>
+				  <figcaption>Part 1: Empty</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="part1/CBspheres.png" width="400px"/>
+				  <figcaption>Part 1: Spheres</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="part1/CBgems.png" width="400px"/>
+				  <figcaption>Part 1: Gems</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="part1/banana.png" width="400px"/>
+				  <figcaption>Part 1: Banana</figcaption>
 				</td>
 			  </tr>
 			</table>
