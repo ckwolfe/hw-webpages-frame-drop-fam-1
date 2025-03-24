@@ -159,13 +159,322 @@
 		</div>
 		
 		<h2>Part 2: Bounding Volume Hierarchy</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			To construct the bounding volume hierarchy, we calculate the centroid of the collective bounding box and split bounding boxes based off of that. We first calculate the aggregate bounding box of the primitives in the node and the average of the centroids of the primitives in the node. Then we create the current node with the calculated aggregate bounding box. If the number of primitives exceeds <code>max_leaf_size</code>, then we split the primitives into two nodes. To do so, we first find which axis is best for splitting the primitives over, where the heuristic is we split if the centroid of the primitive if less than or greater or equal to the average centroid of all the primitives on one axis. Then we split on this axis by the average centroid into two child nodes.
+		</p>
+		<p>
+			Below is a rendering of <code>maxplanck.dae</code>, <code>CBlucy.dae</code>, <code>CBdragon.dae</code> and <code>blob.dae</code>, along with the number of primitives, the BVH building time, and rendering time in the captions.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part2/maxplanck.png" width="400px"/>
+				  <figcaption>Part 2: Max Planck (50801 primitives | 0.0122s | 0.0825s)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part2/CBlucy.png" width="400px"/>
+				  <figcaption>Part 2: Lucy (133796 primitives | 0.0406s | 0.1880s)</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part2/CBdragon.png" width="400px"/>
+				  <figcaption>Part 2: Dragon (100012 primitives | 0.0314s | 0.0434s)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part2/blob.png" width="400px"/>
+				  <figcaption>Part 2: Blob (196608 primitives | 0.0600s | 0.2288s)</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>
+			The rendering time of the meshes before implmenting BVH definitely took longer than after implmenting BVH. The four images above rendered on the scale of minutes without BVH on my computer. However, with BVH, the rendering time is well under a full second. For Max Planck, the original method takes only 0.0006s to build the single BVH node but 42.6133s to render. For Lucy, the original method takes only 0.0034s to build the single BVH node but 176.8601s to render. Although we often discuss the \( O(n) \) versus \( O(\log n) \) runtimes, it is interesting to see the actual time difference here, as implementing BVH allows us to get rid of candidate intersection primitives and identify the closest intersection in logarithmic time instead of looping through all of the primitives in linear time.
+		</p>
+		<p>
+			As a side note, we noticed that our implementation on the computer the meshes are being rendered on is much faster than the staff renders on the spec, even though we implemented the most basic algorithm suggested by the spec. Rendering the cow using our Part 1 implementation takes only 3.8393s versus the 40s detailed in the spec. We credit this to the processing of the computer we are rendering on. This is also likely why we can even render the large meshes in 3-4 minutes with the basic method, which we used for our analysis to show the runtime difference better. However, we can still see the scale of the speedups when running BVH.
+		</p>
 
 		<h2>Part 3: Direct Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			To implement direct lighting with uniform hemisphere sampling, we cast rays in random directions to create a Monte Carlo estimator of the radiance from point \( \text{p} \).
+			\[
+				L_r(\text{p}, \omega_r) \approx \sum\limits_{j=1}^N \frac{f_r(\text{p}, \omega_j \rightarrow \omega_r) L_i(\text{p}, \omega_j) \cos \theta_j}{p(\omega_j)}
+			\]
+			We use <code>UniformHemisphereSampler3D::get_sample()</code> to get a random \( \omega_j \) to trace the reflection back towards. Then we cast a ray in the world frame from \( \text{p} \) in the \( \omega_j \) direction and see if it hits a primitive. If the primitive is a light source, then calculate the term above. If not, then you can skip calculating it and go to the next term. Note that for uniform hemisphere sampling, \( p(\omega_j) = \frac{1}{2\pi} \).
+		</p>
+		<p>
+			To implement direct lighting by importance sampling lights, we cast rays towards light sources to create a Monte Carlo estimator of the radiance from point \( \text{p} \). In this case, \( p(\omega_j) \) will change with the probability that the light was casted towards and hit. Here is the equation again. We apply this for each light source individually and add the contributions of each source for the final output.
+			\[
+				L_r(\text{p}, \omega_r) \approx \sum\limits_{j=1}^N \frac{f_r(\text{p}, \omega_j \rightarrow \omega_r) L_i(\text{p}, \omega_j) \cos \theta_j}{p(\omega_j)}
+			\]
+			Now we use <code>SceneLight::sample_L(Vector3D& p, Vector3D* wi, double* distToLight, double* pdf)</code> to sample rays towards a given light source. If the light source is a point light, then we only sample it once, as otherwise it would be redundant. If the light source is an area light, we sample it <code>ns_area_light</code> times. Just like in uniform hemisphere sampling, we cast a ray in the world frame from \( \text{p} \) in the \( \omega_j \) (<code>wi</code>) direction and see if it hits a primitive. However, in this case, we set the <code>max_t</code> of the ray to <code>distToLight - EPS_F</code> to find if the ray is blocked from reaching the light, and if it is, we don't add the term. We don't need the intersection with this potential primitive, we only care if there is an intersection and therefore a blockage. We can directly get \( L_i(\text{p}, \omega_j) \) from <code>SceneLight::sample_L(Vector3D& p, Vector3D* wi, double* distToLight, double* pdf)</code> instead of using the BSDF from the intersection, and \( p(\omega_j) \) is <code>pdf</code>.
+		</p>
+		<p>
+			Here are examples of uniform hemisphere sampling and light sampling for various meshes.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part3/bunny_64_32_hemisphere.png" width="400px"/>
+				  <figcaption>Part 3: Bunny - Uniform Hemisphere Sampling</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part3/bunny_64_32_importance.png" width="400px"/>
+				  <figcaption>Part 3: Bunny - Light Sampling</figcaption>
+				</td>
+			  </tr>
+				<tr>
+				<td style="text-align: center;">
+					<img src="part3/spheres_64_32_hemisphere.png" width="400px"/>
+					<figcaption>Part 3: Spheres - Uniform Hemisphere Sampling</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="part3/spheres_64_32_importance.png" width="400px"/>
+					<figcaption>Part 3: Spheres - Light Sampling</figcaption>
+				</td>
+				</tr>
+			</table>
+		</div>
+		<p>
+			Note how the uniform hemisphere sampling has more noise than the light importance sampling, as in uniform hemisphere sampling, we randomly cast rays in the directions of a hemisphere to calculate the illuminance, so we may miss light sources and have to sample more to get closer to the true radiance. By sampling towards the light sources directly, we get a better approximation of the lighting and reduce the black noise in the render. All of these rays casted are non-zero, while many of the hemisphere rays are zero, so we must sample more with the uniform hemisphere method to hit the actual light sources.
+		</p>
+		<p>
+			Here are the spheres with various numbers of light rays.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part3/spheres_1_1_importance.png" width="400px"/>
+				  <figcaption>Part 3: Spheres (\( l=1 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part3/spheres_1_4_importance.png" width="400px"/>
+				  <figcaption>Part 3: Spheres (\( l=4 \))</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="part3/spheres_1_16_importance.png" width="400px"/>
+					<figcaption>Part 3: Spheres (\( l=16 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="part3/spheres_1_64_importance.png" width="400px"/>
+					<figcaption>Part 3: Spheres (\( l=64 \))</figcaption>
+				</td>
+				</tr>
+			</table>
+		</div>
+		<p>
+			Notice how the soft shadows improve with more light rays, as we sample more towards the light and smooth the edges of the shadow. With less samples, there is more variance that more of the light rays will get blocked by the object, which creates the noise in the shadow. By casting more rays, that variance goes down and we get a smoother border in the shadow. However, by casting more rays, our render time increases.
+		</p>
 
 		<h2>Part 4: Global Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			To implement indirect lighting, we followed the following steps.
+			<ol>
+				<li>If the ray depth is zero, then return the zero vector. Zero bounce is handled outside of the recursion.</li>
+				<li>If the ray depth is one, then return the one bounce radiance.</li>
+				<li>If we want to accumulate the bounces, then add one bounce to the output.</li>
+				<li>For random termination/Russian Roulette, we flip a coin with \( p = 0.35 \) probability to be heads. If it is heads, then we return whatever output we have (which is zero unless we accumulated a bounce in Step 3).</li>
+				<li>Sample a random direction using <code>BSDF::sample_f(Vector3D& w_out, Vector3D* w_in, double* pdf)</code>. This will give us the next direction <code>w_in</code>, the prior that we chose that direction <code>pdf</code>, and the BRDF.</li>
+				<li>Generate a new ray in the direction originating from the point on the surface. We offset the range of valid intersections with <code>EPS_F</code>.</li>
+				<li>
+					If this new ray intersects with a primitive, then add the recursive call multiplied by the BSDF and the cosine of the angle from the normal and divided by the prior and the continuation probability \( 1 - p \). Mathematically, this is
+					\[
+						L_o(\text{p}, \omega_o) = L_e(\text{p}, \omega_o) + \frac{f_r(\omega_i \rightarrow \omega_o) L_o(tr(\text{p}, \omega_i), -\omega_i) \cos \theta_i}{p(\omega_i) (1 - p)}
+					\]
+				</li>
+				<li>
+					Return the output.
+				</li>
+			</ol>
+			Outside of the recursion, we add the zero bounce radiance. We also have conditionals to check if we want to accumulate the bounces, and if we don't, to run <code>zero_bounce_radiance(const Ray &r, const Intersection &isect)</code> if we want a depth of zero and <code>at_least_one_bounce_radiance(const Ray &r, const Intersection &isect)</code> if we want a positive depth. We also made sure to initialize the ray depth to be <code>max_ray_depth</code>.
+		</p>
+		<p>
+			Here are some examples of direct and indirect lighting. For the indirect lighting, we rendered up to five bounces.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part4/spheres_direct.png" width="400px"/>
+				  <figcaption>Part 4: Spheres with Only Direct Lighting (Zero and One Bounce)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/spheres_indirect.png" width="400px"/>
+				  <figcaption>Part 4: Spheres with Only Indirect Lighting (More Than One Bounce)</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="part4/bunny_direct.png" width="400px"/>
+					<figcaption>Part 4: Bunny with Only Direct Lighting (Zero and One Bounce)</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="part4/bunny_indirect.png" width="400px"/>
+					<figcaption>Part 4: Bunny with Only Indirect Lighting (More Than One Bounce)</figcaption>
+				</td>
+				</tr>
+			</table>
+		</div>
+		<p>
+			Here are the \( m \)th bounce of light on the bunny, where \( m = 0, 1, 2, 3, 4, 5 \), alongside the accumulated renderings of the bunny at each bounce level.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnym0.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (\( m=0 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunny0.png" width="400px"/>
+				  <figcaption>Part 4: Accumulated Bunny (\( m=0 \))</figcaption>
+				</td>
+			  </tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnym1.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (\( m=1 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunny1.png" width="400px"/>
+				  <figcaption>Part 4: Accumulated Bunny (\( m=1 \))</figcaption>
+				</td>
+			  </tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnym2.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (\( m=2 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunny2.png" width="400px"/>
+				  <figcaption>Part 4: Accumulated Bunny (\( m=2 \))</figcaption>
+				</td>
+			  </tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnym3.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (\( m=3 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunny3.png" width="400px"/>
+				  <figcaption>Part 4: Accumulated Bunny (\( m=3 \))</figcaption>
+				</td>
+			  </tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnym4.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (\( m=4 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunny4.png" width="400px"/>
+				  <figcaption>Part 4: Accumulated Bunny (\( m=4 \))</figcaption>
+				</td>
+			  </tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnym5.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (\( m=5 \))</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunny5.png" width="400px"/>
+				  <figcaption>Part 4: Accumulated Bunny (\( m=5 \))</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<p>
+			The zeroth bounce is just the light source, while the first bounce is the direct illumination. The second bounce adds more illumination to the walls, ceiling, and shadows of the bunny unreached by the first bounce. Notably, the only way light can reach the ceiling is on the second bounce, as it must bounce off another surface first to reach it. Many of the shadows in the crevices of the bunny mesh are also only really illuminated on the second bounce. The third bounce further lightens the darker shadows of the bunny and the walls and ceiling that are hard to reach even after two bounces. After three bounces, the effect is much less notable -- the fourth and fifth bounces are very dim. There are dimishing returns in more bounces. All of these bounces further illuminate the walls as light bounces between them.
+		</p>
+		<p>
+			Here is the bunny rendered at <code>max_ray_depth</code> set to 0, 1, 2, 3, 4, and 100 with Russian Roulette rendering where the termination probability is \( p = 0.3 \).
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part4/bunnyrr0.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (<code>max_ray_depth=0</code>)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/bunnyrr1.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (<code>max_ray_depth=1</code>)</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="part4/bunnyrr2.png" width="400px"/>
+					<figcaption>Part 4: Bunny (<code>max_ray_depth=2</code>)</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="part4/bunnyrr3.png" width="400px"/>
+					<figcaption>Part 4: Bunny (<code>max_ray_depth=3</code>)</figcaption>
+				</td>
+				</tr>
+				<tr>
+				<td style="text-align: center;">
+					<img src="part4/bunnyrr4.png" width="400px"/>
+					<figcaption>Part 4: Bunny (<code>max_ray_depth=4</code>)</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="part4/bunnyrr100.png" width="400px"/>
+					<figcaption>Part 4: Bunny (<code>max_ray_depth=100</code>)</figcaption>
+				</td>
+				</tr>
+			</table>
+		</div>
+		<p>
+			Note as we increase the <code>max_ray_depth</code>, the render of the bunny gets better and the shadows brighten. However, it is hard to notice a difference after three bounces -- there are diminishing returns in increasing the maximum ray depth. The max depth of four is almost indistinguishable from one hundred, as the termination probability culls most rays well before the bounces reach much higher than four combined with the diminishing returns of the illuminance after every bounce.
+		</p>
+		<p>
+			Here is the bunny again with 1, 2, 4, 8, 16, 64, and 1024 sample-per-pixel rates.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp1.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (1spp)</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp2.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (2spp)</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp4.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (4spp)</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp8.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (8spp)</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp16.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (16spp)</figcaption>
+				</div>
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp64.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (64spp)</figcaption>
+				</div>
+			</div>
+			<div style="display: flex; flex-direction: row; align-items: center;">
+				<div style="text-align: center; padding: 10px;">
+					<img src="part4/bunnyspp1024.png" width="400px"/>
+				  <figcaption>Part 4: Bunny (1024spp)</figcaption>
+				</div>
+			</div>
+		</div>
+		<p>
+			As we sample more per pixel, the static noise disappears and the picture becomes clearer. This is due to the high variance in calculated illuminance with less samples. With one sample per pixel, it is easy to see that the render is of a bunny, but the picture isn't very clear. At 64 samples per pixel, the noise is barely visible. At 1024 samples per pixel, there is no noticable noise left.
+		</p>
 
 		<h2>Part 5: Adaptive Sampling</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
