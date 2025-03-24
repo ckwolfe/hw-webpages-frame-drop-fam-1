@@ -296,7 +296,34 @@
 			Outside of the recursion, we add the zero bounce radiance. We also have conditionals to check if we want to accumulate the bounces, and if we don't, to run <code>zero_bounce_radiance(const Ray &r, const Intersection &isect)</code> if we want a depth of zero and <code>at_least_one_bounce_radiance(const Ray &r, const Intersection &isect)</code> if we want a positive depth. We also made sure to initialize the ray depth to be <code>max_ray_depth</code>.
 		</p>
 		<p>
-			Here are some examples of direct and indirect lighting. For the indirect lighting, we rendered up to five bounces.
+			Here are the spheres and bunny with direct lighting and both direct and indirect lighting. For the indirect lighting, we rendered up to five bounces.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="part4/spheres_direct.png" width="400px"/>
+				  <figcaption>Part 4: Spheres with Direct Lighting</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="part4/spheres.png" width="400px"/>
+				  <figcaption>Part 4: Spheres with Direct and Indirect Lighting</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="part4/bunny_direct.png" width="400px"/>
+					<figcaption>Part 4: Bunny with Direct Lighting</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="part4/bunny.png" width="400px"/>
+					<figcaption>Part 4: Bunny with Direct and Indirect Lighting</figcaption>
+				</td>
+				</tr>
+			</table>
+		</div>
+		<p>
+			Here are some examples of only direct and only indirect lighting. For the indirect lighting, we rendered up to five bounces.
 		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
@@ -322,6 +349,9 @@
 				</tr>
 			</table>
 		</div>
+		<p>
+			We can see that the only direct lighting combined with the only indirect lighting creates the full render of direct and indirect lighting. It is interesting to see that the direct lighting does not include the ceiling, as it requires two bounces for the light to reach the ceiling. The shadows of the spheres and the bunny are also darker. For indirect lighting, the ceiling is lit and the shadows cast by the objects are lighter, as more bounces allows the light to reach the crevices of the shadows. The tops of the objects are also darker, since they are closer to the light source compared to the rest of the object and are primarily illuminated on the first bounce.
+		</p>
 		<p>
 			Here are the \( m \)th bounce of light on the bunny, where \( m = 0, 1, 2, 3, 4, 5 \), alongside the accumulated renderings of the bunny at each bounce level.
 		</p>
