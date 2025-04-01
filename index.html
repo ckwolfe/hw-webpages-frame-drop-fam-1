@@ -1,89 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-	<style>
-			h1 {
-				text-align: center;
-			}
-
-			.container {
-				margin: 0 auto;
-				padding: 60px 20%;
-			}
-
-			figure {
-				text-align: center;
-			}
-
-			img {
-				display: inline-block;
-			}
-
-			body {
-				font-family: 'Inter', sans-serif;
-				line-height: 1.4;
-				color: #32323a;
-				background-color: #ffffff;
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-				width: 40%;
-				height: 100%;
-				margin: 0;
-				position: absolute;
-				left: 50%;
-				transform: translateX(-50%);
-			}
-
-		@media (max-width: 600px) {
-			body {
-				width: 100%;
-				left: 0;
-				transform: none;
-			}
-		}
-
-		a {
-			text-decoration: none;
-			color: #0057A8;
-		}
-
-		a:hover {
-			color: #8E018E !important;
-			text-decoration: underline;
-		}
-	</style>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS184/284A Homework Webpages</title>
-	</head>
-	<body>
-		<div class="wrapper">
-			<header>
-				<h1 style="align-self:flex-end;">CS184/284A Homework Webpages</h1>
-			</header>
-			<main>
-				<div class="content">
-					<ul>
-						<li><a href="/hw1/index.html">Homework 1</a></li>
-						<li><a href="/hw2/index.html">Homework 2</a></li>
-						<li><a href="/hw3/index.html">Homework 3</a></li>
-						<li><a href="/hw4/index.html">Homework 4</a></li>
-					</ul>
-				</div>
-			</main>
-		</div>
-	</body>
-	<script>
-		var links = document.body.getElementsByTagName("a")
-		var a = window.location.href.indexOf(".io")
-		var repo_name = window.location.href.substring(a+3)
-		for(var i = 0; i < links.length; i++){
-			var link = links[i]
-			var actual_name = link.href.substring(link.href.indexOf(".io")+4)
-			link.href = repo_name + actual_name
-		}
-	</script>
-</html>
+    <title>CS184/284A Homework Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #003262; /* Berkeley Blue */
+            --secondary-color: #FDB515; /* Berkeley Gold */
+            --background-color: #f8f9fa;
+            --card-color: #ffffff;
+            --text-color: #32323a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #001F3F 0%, #003262 40%, #0057a8 90%);
+            background-image: 
+                linear-gradient(135deg, #001F3F 0%, #003262 40%, #0057a8 90%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px);
+            color: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+
+        .homework-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .homework-card {
+            background-color: var(--card-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .homework-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .homework-card:nth-child(1) .card-header {
+            background: linear-gradient(135deg, #003262, #0057a8);
+        }
+        
+        .homework-card:nth-child(2) .card-header {
+            background: linear-gradient(135deg, #003262, #006a96);
+        }
+        
+        .homework-card:nth-child(3) .card-header {
+            background: linear-gradient(135deg, #003262, #3b7ea1);
+        }
+        
+        .homework-card:nth-child(4) .card-header {
+            background: linear-gradient(135deg, #003262, #00537a);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-description {
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .view-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-button:hover {
+            background-color: var(--secondary-color);
+            color: white !important;
+            text-decoration: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        a:hover {
+            color: var(--secondary-color) !important;
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .final-project-card {
+            background-color: var(--card-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .final-project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .final-project-content {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .final-project-img {
+            width: 30%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .final-project-body {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .final-project-card .card-header {
+            background: var(--secondary-color);
+        }
+
+        @media (max-width: 1024px) {
+            .homework-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .final-project-content {
+                flex-direction: column;
+            }
+            
+            .final-project-img {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            header {
+                padding: 2rem 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .homework-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CS184/284A Homework Portfolio</h1>
+        <p class="subtitle">Spring 2025 CS184/284A - Computer Graphics and Imaging</p>
+        <p class="subtitle">Edward Lee, C.K. Wolfe</p>
+    </header>
+
+    <div class="container">
+        <div class="homework-grid">
+            <div class="homework-card">
+                <div class="card-header">Homework 1</div>
+                <img src="hw1/lion.jpg" alt="Homework 1 Preview" class="card-img" onerror="this.src='https://via.placeholder.com/400x200?text=Rasterizer'">
+                <div class="card-body">
+                    <p class="card-description">Rasterizer implementation with various sampling methods and transforms.</p>
+                    <a href="hw1/index.html" class="view-button">View Project</a>
+                </div>
+            </div>
+
+            <div class="homework-card">
+                <div class="card-header">Homework 2</div>
+                <img src="hw2/teapot.png" alt="Homework 2 Preview" class="card-img" onerror="this.src='https://via.placeholder.com/400x200?text=Mesh+Processing'">
+                <div class="card-body">
+                    <p class="card-description">Mesh operations and geometric processing techniques.</p>
+                    <a href="hw2/index2.html" class="view-button">View Project</a>
+                </div>
+            </div>
+
+            <div class="homework-card">
+                <div class="card-header">Homework 3</div>
+                <img src="hw3/cornell.png" alt="Homework 3 Preview" class="card-img" onerror="this.src='https://via.placeholder.com/400x200?text=Path+Tracing'">
+                <div class="card-body">
+                    <p class="card-description">Path tracing implementation with global illumination.</p>
+                    <a href="hw3/index3.html" class="view-button">View Project</a>
+                </div>
+            </div>
+
+            <div class="homework-card">
+                <div class="card-header">Homework 4</div>
+                <img src="hw4/clothsim.png" alt="Homework 4 Preview" class="card-img" onerror="this.src='https://via.placeholder.com/400x200?text=Animation'">
+                <div class="card-body">
+                    <p class="card-description">Animation and simulation using physically-based methods.</p>
+                    <a href="hw4/index4.html" class="view-button">View Project</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="final-project-card">
+            <div class="card-header">Final Project</div>
+            <div class="final-project-content">
+                <img src="final-project/preview.png" alt="Final Project Preview" class="final-project-img" onerror="this.src='https://via.placeholder.com/800x400?text=Coming+Soon'">
+                <div class="final-project-body">
+                    <h3>Coming Soon</h3>
+                    <p class="card-description"> final project will be available here at the end of the semester.</p>
+                    <a href="#" class="view-button disabled" style="opacity: 0.6; cursor: not-allowed;">Under Development</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 CS184/284A - Computer Graphics and Imaging</p>
+    </footer>
+
+    <script>
+        // Fix links for GitHub Pages
+        var links = document.querySelectorAll("a");
+        var a = window.location.href.indexOf(".io");
+        
+        if (a !== -1) {
+            var repo_name = window.location.href.substring(a+3);
+            for(var i = 0; i < links.length; i++){
+                var link = links[i];
+                if (link.href.indexOf("http") === 0) {
+                    var actual_name = link.href.substring(link.href.indexOf(".io")+4);
+                    link.href = repo_name + actual_name;
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

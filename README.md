@@ -1,6 +1,8 @@
 # CS184/284A Homework Webpage Repo
 
-The goal of this repo is to provide a template from which students can host CS184/284A homework writeups. 
+please find the site at https://cal-cs184-student.github.io/hw-webpages-frame-drop-fam-1/
+
+<!-- The goal of this repo is to provide a template from which students can host CS184/284A homework writeups. 
 
 Feel free to be as creative as you want with this! As long as your writeup is easily readable to staff members who are grading, and can be printed into a readable PDF (for submission to Gradescope), we would be happy with it!
 
@@ -16,4 +18,4 @@ To enable Github pages, go to the 'Settings' tab then click on 'Pages'. Under 'B
 
 ## Adding Homework Webpages
 
-There are 4 folders, one for each homework. Each contains an index.html file. When the links from the mainpage are clicked, these files will be loaded, so edit these to add your homework webpages.
+There are 4 folders, one for each homework. Each contains an index.html file. When the links from the mainpage are clicked, these files will be loaded, so edit these to add your homework webpages. -->
