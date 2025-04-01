@@ -290,11 +290,19 @@
         // Fix links for GitHub Pages
         var links = document.body.getElementsByTagName("a");
         var a = window.location.href.indexOf(".io");
-        var repo_name = window.location.href.substring(a+3);
+        var repo_path = window.location.href.substring(a+3);
+        
+        // Remove current page filename from the repository path
+        if (repo_path.includes("/index.html")) {
+            repo_path = repo_path.substring(0, repo_path.lastIndexOf("/") + 1);
+        }
+        
         for(var i = 0; i < links.length; i++){
             var link = links[i];
-            var actual_name = link.href.substring(link.href.indexOf(".io")+4);
-            link.href = repo_name + actual_name;
+            if (link.href.indexOf(".io") !== -1) {
+                var actual_name = link.href.substring(link.href.indexOf(".io")+4);
+                link.href = repo_path + actual_name;
+            }
         }
     </script>
 </body>
